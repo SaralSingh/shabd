@@ -314,7 +314,8 @@
     </article>
 
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none" style="display: none;">@csrf</form>
-
+    
+    @include('partials.auth-token')
     <script>
         const url = "{{ config('app.url') }}";
         const token = localStorage.getItem('token');

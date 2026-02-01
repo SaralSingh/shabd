@@ -220,6 +220,11 @@
 
 <body>
     @php $user = Auth::user(); @endphp
+        @if(session('auth_token'))
+<script>
+    localStorage.setItem('token', "{{ session('auth_token') }}");
+</script>
+@endif
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     <aside class="sidebar" id="sidebar">

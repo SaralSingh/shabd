@@ -311,7 +311,8 @@
     </div>
 
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none" style="display: none;">@csrf</form>
-
+    
+    @include('partials.auth-token')
     <script>
         // --- Sidebar Logic ---
         function toggleSidebar() {
