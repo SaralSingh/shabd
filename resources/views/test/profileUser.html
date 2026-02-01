@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogify - Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    /* CSS Variables */
+    :root {
+        --bg-primary: #121212;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #1f1f1f;
+        --border-color: #2a2a2a;
+        --text-primary: #e0e0e0;
+        --text-secondary: #a0a0a0;
+        --text-muted: #6b7280;
+        --accent-color: #3b82f6;
+        --accent-hover: #2563eb;
+        --premium-color: #d1a054;
+    }
+
+    /* Base Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        overflow-x: hidden;
+    }
+
+    /* Utility Classes */
+    .flex {
+        display: flex;
+    }
+
+    .flex-col {
+        flex-direction: column;
+    }
+
+    .items-center {
+        align-items: center;
+    }
+
+    .justify-center {
+        justify-content: center;
+    }
+
+    .justify-between {
+        justify-content: space-between;
+    }
+
+    .gap-1 { gap: 0.25rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-5 { gap: 1.25rem; }
+    .gap-6 { gap: 1.5rem; }
+
+    .hidden {
+        display: none;
+    }
+
+    /* Layout */
+    .main-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Navbar Styles */
+    .navbar {
+        width: 100%;
+        background-color: rgba(26, 26, 26, 0.95);
+        padding: 15px 30px;
+        border-bottom: 1px solid var(--border-color);
+        position: fixed;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        letter-spacing: -0.5px;
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .btn-signin {
+        background-color: transparent;
+        color: var(--text-primary);
+        border: 1px solid #3a3a3a;
+    }
+
+    .btn-signin:hover {
+        background-color: var(--bg-tertiary);
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color);
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--border-color);
+    }
+
+    .btn-pill {
+        border-radius: 24px;
+        padding: 10px 20px;
+        min-width: 120px;
+    }
+
+    /* Content Area */
+    .content {
+        display: flex;
+        width: 100%;
+        margin-top: 70px;
+        height: calc(100vh - 70px);
+    }
+
+    /* User Section */
+    .user-section {
+        width: 40%;
+        height: 100%;
+        padding: 25px;
+        background-color: var(--bg-primary);
+        border-right: 1px solid var(--border-color);
+        overflow-y: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .user-section::-webkit-scrollbar {
+        display: none;
+    }
+
+    .user-content {
+        background-color: var(--bg-secondary);
+        border-radius: 10px;
+        padding: 25px;
+        min-height: calc(100% - 70px);
+        height: auto;
+        display: flex;
+    }
+
+    /* Profile Info */
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 3px solid var(--bg-secondary);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar i {
+        font-size: 3rem;
+        color: var(--text-muted);
+    }
+
+    .profile-details {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+    }
+
+    .profile-bio {
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .profile-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 25px;
+    }
+
+    .profile-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .profile-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 30px;
+        height: fit-content;
+    }
+
+    /* Profile Stats */
+    .profile-stats {
+        display: flex;
+        gap: 25px;
+        margin: 20px 0;
+        padding: 20px 0;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        justify-content: center;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .side-things {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Posts Section */
+    .posts-section {
+        width: 60%;
+        height: 100%;
+        padding: 25px;
+        background-color: var(--bg-primary);
+        overflow: hidden;
+    }
+
+    .posts-content {
+        background-color: var(--bg-secondary);
+        border-radius: 10px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .posts-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        background-color: var(--bg-secondary);
+        z-index: 100;
+    }
+
+    /* Tabs */
+    .profile-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-item {
+        padding: 12px 20px;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-secondary);
+        position: relative;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+    }
+
+    .tab-item:hover {
+        color: var(--text-primary);
+    }
+
+    .tab-item.active {
+        color: var(--accent-color);
+    }
+
+    .tab-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: var(--accent-color);
+    }
+
+    /* Content Containers */
+    .posts-container, .about-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 25px;
+        scrollbar-width: thin;
+        scrollbar-color: #3a3a3a var(--bg-secondary);
+    }
+
+    .posts-container::-webkit-scrollbar, .about-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .posts-container::-webkit-scrollbar-track, .about-container::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    .posts-container::-webkit-scrollbar-thumb, .about-container::-webkit-scrollbar-thumb {
+        background-color: #3a3a3a;
+        border-radius: 3px;
+    }
+
+    /* Post Cards */
+    .post-card {
+        background-color: var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .post-card:hover {
+        background-color: #232323;
+    }
+
+    .post-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #ffffff;
+        line-height: 1.4;
+    }
+
+    .post-excerpt {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .post-tags {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .post-tag {
+        background-color: var(--border-color);
+        color: var(--text-secondary);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .post-meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        align-items: center;
+    }
+
+    .post-actions {
+        display: flex;
+        gap: 20px;
+    }
+
+    .post-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .post-action:hover {
+        color: var(--accent-color);
+    }
+
+    /* Badges */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-premium {
+        background-color: var(--border-color);
+        border: 1px solid #3a3a3a;
+        color: var(--premium-color);
+        margin-bottom: 12px;
+    }
+
+    /* About Section */
+    .about-content {
+        background-color: var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .about-content h3 {
+        margin-bottom: 15px;
+        color: #ffffff;
+        font-size: 1.2rem;
+    }
+
+    .about-content p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+
+    /* Mobile Nav */
+    .mobile-nav {
+        display: none;
+    }
+
+    .mobile-nav-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mobile-nav-title {
+        font-size: 1.4rem;
+    }
+
+    .toggle-button {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.4rem;
+        cursor: pointer;
+    }
+
+    .mobile-nav-menu {
+        display: none;
+        padding: 15px;
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+        .user-section {
+            width: 45%;
+        }
+        .posts-section {
+            width: 55%;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .content {
+            margin-top: 65px;
+        }
+        .user-section, .posts-section {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .navbar {
+            padding: 12px 20px;
+        }
+        
+        .mobile-nav {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-secondary);
+            z-index: 1000;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-nav-menu.active {
+            display: block;
+        }
+
+        .content {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .user-section, .posts-section {
+            width: 100%;
+            height: auto;
+            padding: 20px;
+            border-right: none;
+        }
+
+        .user-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-buttons {
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        .profile-buttons button {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-stats {
+            gap: 15px;
+        }
+        .profile-tabs {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .profile-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-item {
+            white-space: nowrap;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Desktop Navigation -->
+        <nav class="navbar">
+            <div class="navbar-header">Blogify</div>
+            <div class="nav-actions">
+                <button class="btn btn-signin">Sign In</button>
+                <button class="btn btn-primary">Get Started</button>
+            </div>
+        </nav>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav">
+            <div class="mobile-nav-header">
+                <div class="mobile-nav-title">Blogify</div>
+                <button class="toggle-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="mobile-nav-menu">
+                <div class="nav-actions" style="margin-top: 15px;">
+                    <button class="btn btn-signin">Sign In</button>
+                    <button class="btn btn-primary">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- User Profile Section -->
+            <div class="user-section">
+                <div class="user-content">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-details">
+                            <h1 class="profile-name">Sankor</h1>
+                            <h3>sankor@gmail.com</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="side-things">
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">2,134</div>
+                                <div class="stat-label">Following</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">456</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                        </div>
+
+                        <div class="profile-buttons">
+                            <button class="btn btn-primary btn-pill">Follow</button>
+                            <button class="btn btn-secondary btn-pill">Subscribed</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts Section -->
+            <div class="posts-section">
+                <div class="posts-content">
+                    <div class="posts-header">
+                        <div class="profile-tabs">
+                            <div class="tab-item active" data-tab="posts">Posts</div>
+                            <div class="tab-item" data-tab="about">About</div>
+                        </div>
+                    </div>
+
+                    <!-- Posts Container -->
+                    <div class="posts-container active">
+                        <div class="post-card">
+                            <h2 class="post-title">The Future of Web Development: What's Coming in 2024</h2>
+                            <p class="post-excerpt">Exploring the latest trends and technologies that will shape how we build web applications in the coming year.</p>
+                            <div class="post-tags">
+                                <span class="post-tag">React</span>
+                                <span class="post-tag">Web Development</span>
+                                <span class="post-tag">2024</span>
+                            </div>
+                            <div class="post-meta">
+                                <span>Dec 15, 2023 · 8 min read</span>
+                                <div class="post-actions">
+                                    <span class="post-action"><i class="far fa-heart"></i> 1,250</span>
+                                    <span class="post-action"><i class="far fa-comment"></i> 142</span>
+                                    <span class="post-action"><i class="far fa-bookmark"></i> 23</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-card">
+                            <div class="badge badge-premium">Premium</div>
+                            <h2 class="post-title">Building Scalable Design Systems with React</h2>
+                            <p class="post-excerpt">Learn how to create design systems that scale with your organization's growth while maintaining consistency across products.</p>
+                            <div class="post-tags">
+                                <span class="post-tag">React</span>
+                                <span class="post-tag">Design Systems</span>
+                                <span class="post-tag">Frontend</span>
+                            </div>
+                            <div class="post-meta">
+                                <span>Nov 28, 2023 · 10 min read</span>
+                                <div class="post-actions">
+                                    <span class="post-action"><i class="far fa-heart"></i> 892</span>
+                                    <span class="post-action"><i class="far fa-comment"></i> 76</span>
+                                    <span class="post-action"><i class="far fa-bookmark"></i> 45</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-card">
+                            <h2 class="post-title">Optimizing React Performance: Beyond the Basics</h2>
+                            <p class="post-excerpt">Advanced techniques for making your React applications faster and more responsive, even with complex data.</p>
+                            <div class="post-tags">
+                                <span class="post-tag">React</span>
+                                <span class="post-tag">Performance</span>
+                                <span class="post-tag">JavaScript</span>
+                            </div>
+                            <div class="post-meta">
+                                <span>Oct 12, 2023 · 12 min read</span>
+                                <div class="post-actions">
+                                    <span class="post-action"><i class="far fa-heart"></i> 1,542</span>
+                                    <span class="post-action"><i class="far fa-comment"></i> 203</span>
+                                    <span class="post-action"><i class="far fa-bookmark"></i> 87</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-card">
+                            <div class="badge badge-premium">Premium</div>
+                            <h2 class="post-title">TypeScript Best Practices for Large Codebases</h2>
+                            <p class="post-excerpt">How we implemented TypeScript across our 500,000+ line codebase and the lessons we learned along the way.</p>
+                            <div class="post-tags">
+                                <span class="post-tag">TypeScript</span>
+                                <span class="post-tag">Engineering</span>
+                                <span class="post-tag">Best Practices</span>
+                            </div>
+                            <div class="post-meta">
+                                <span>Sep 5, 2023 · 15 min read</span>
+                                <div class="post-actions">
+                                    <span class="post-action"><i class="far fa-heart"></i> 2,134</span>
+                                    <span class="post-action"><i class="far fa-comment"></i> 312</span>
+                                    <span class="post-action"><i class="far fa-bookmark"></i> 156</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Container -->
+                    <div class="about-container">
+                        <div class="about-content">
+                            <h3>About</h3>
+                            <p>I'm a frontend developer with 5 years of experience building web applications. Currently working at RashCorp where I lead the frontend architecture team.</p>
+                            <p>My expertise includes React, TypeScript, and performance optimization. I'm passionate about creating accessible and performant web experiences.</p>
+                            <p>When I'm not coding, you can find me hiking, reading sci-fi, or playing guitar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-item');
+        const postsContainer = document.querySelector('.posts-container');
+        const aboutContainer = document.querySelector('.about-container');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                tab.classList.add('active');
+
+                // Show/hide content based on clicked tab
+                if (tab.dataset.tab === 'posts') {
+                    postsContainer.classList.add('active');
+                    aboutContainer.classList.remove('active');
+                } else if (tab.dataset.tab === 'about') {
+                    postsContainer.classList.remove('active');
+                    aboutContainer.classList.add('active');
+                }
+            });
+        });
+
+        // Mobile nav toggle functionality
+        const toggleButton = document.querySelector('.toggle-button');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
+
+        if (toggleButton && mobileNavMenu) {
+            toggleButton.addEventListener('click', () => {
+                mobileNavMenu.classList.toggle('active');
+                toggleButton.innerHTML = mobileNavMenu.classList.contains('active') 
+                    ? '<i class="fas fa-times"></i>' 
+                    : '<i class="fas fa-bars"></i>';
+            });
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Saral Singh",
+    "username": "sarals",
+    "email": "saral@example.com",
+    "password": "hashed_password_1",
+    "role": "user",
+    "avatar": "images/avatars/saral.jpg"
+  },
+  {
+    "name": "Aman Gupta",
+    "username": "aman123",
+    "email": "aman@example.com",
+    "password": "hashed_password_2",
+    "role": "user",
+    "avatar": "images/avatars/aman.jpg"
+  },
+  {
+    "name": "Neha Sharma",
+    "username": "neha_01",
+    "email": "neha@example.com",
+    "password": "hashed_password_3",
+    "role": "user",
+    "avatar": "images/avatars/neha.jpg"
+  },
+  {
+    "name": "Ravi Kumar",
+    "username": "ravi_k",
+    "email": "ravi@example.com",
+    "password": "hashed_password_4",
+    "role": "user",
+    "avatar": null
+  },
+  {
+    "name": "Priya Verma",
+    "username": "priya_v",
+    "email": "priya@example.com",
+    "password": "hashed_password_5",
+    "role": "admin",
+    "avatar": "images/avatars/priya.png"
+  },
+  {
+    "name": "Aditya Mehra",
+    "username": "aditya",
+    "email": "aditya@example.com",
+    "password": "hashed_password_6",
+    "role": "user",
+    "avatar": null
+  },
+  {
+    "name": "Sneha Kapoor",
+    "username": "sneha_k",
+    "email": "sneha@example.com",
+    "password": "hashed_password_7",
+    "role": "user",
+    "avatar": "images/avatars/sneha.jpg"
+  },
+  {
+    "name": "Rahul Dev",
+    "username": "rahul_d",
+    "email": "rahul@example.com",
+    "password": "hashed_password_8",
+    "role": "user",
+    "avatar": "images/avatars/rahul.jpg"
+  },
+  {
+    "name": "Kriti Sen",
+    "username": "kriti_s",
+    "email": "kriti@example.com",
+    "password": "hashed_password_9",
+    "role": "user",
+    "avatar": null
+  },
+  {
+    "name": "Yash Thakur",
+    "username": "yash_t",
+    "email": "yash@example.com",
+    "password": "hashed_password_10",
+    "role": "user",
+    "avatar": "images/avatars/yash.png"
+  }
+]

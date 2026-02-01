@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogify - Edit Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Variables */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #1f1f1f;
+            --border-color: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --premium-color: #d1a054;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Utility Classes */
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-5 { gap: 1.25rem; }
+        .gap-6 { gap: 1.5rem; }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            width: 100%;
+            background-color: rgba(26, 26, 26, 0.95);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-header {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: -0.5px;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-signin {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid #3a3a3a;
+        }
+
+        .btn-signin:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-pill {
+            border-radius: 24px;
+            padding: 10px 20px;
+            min-width: 120px;
+        }
+
+        /* Content Area */
+        .content {
+            display: flex;
+            justify-content: center;
+            margin-top: 70px;
+            padding: 25px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Edit Profile Section */
+        .edit-profile-section {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .edit-profile-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid var(--bg-secondary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        .avatar-preview i {
+            font-size: 3rem;
+            color: var(--text-muted);
+        }
+
+        .avatar-upload input[type="file"] {
+            display: none;
+        }
+
+        .avatar-upload label {
+            cursor: pointer;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .avatar-upload label:hover {
+            color: var(--accent-hover);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Mobile Nav */
+        .mobile-nav {
+            display: none;
+        }
+
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-nav-title {
+            font-size: 1.4rem;
+        }
+
+        .toggle-button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        .mobile-nav-menu {
+            display: none;
+            padding: 15px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-nav-menu.active {
+            display: block;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+
+            .mobile-nav {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg-secondary);
+                z-index: 1000;
+                padding: 12px 15px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .content {
+                padding: 20px;
+                margin-top: 65px;
+            }
+
+            .edit-profile-section {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .edit-profile-header {
+                font-size: 1.3rem;
+            }
+
+            .form-group label {
+                font-size: 0.9rem;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                font-size: 0.9rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .form-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Desktop Navigation -->
+        <nav class="navbar">
+            <div class="navbar-header">Blogify</div>
+            <div class="nav-actions">
+                <button class="btn btn-signin">Sign In</button>
+                <button class="btn btn-primary">Get Started</button>
+            </div>
+        </nav>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav">
+            <div class="mobile-nav-header">
+                <div class="mobile-nav-title">Blogify</div>
+                <button class="toggle-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="mobile-nav-menu">
+                <div class="nav-actions" style="margin-top: 15px;">
+                    <button class="btn btn-signin">Sign In</button>
+                    <button class="btn btn-primary">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Edit Profile Section -->
+            <div class="edit-profile-section">
+                <h1 class="edit-profile-header">Profile</h1>
+                <div class="avatar-upload">
+                    <div class="avatar-preview">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <label for="avatar-upload-input">Change Profile Picture</label>
+                    <input type="file" id="avatar-upload-input" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" value="Sankor" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="sankor@gmail.com" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" placeholder="Tell us about yourself">I'm a frontend developer with 5 years of experience building web applications. Currently working at RashCorp where I lead the frontend architecture team.</textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary btn-pill">Cancel</button>
+                    <button class="btn btn-primary btn-pill">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Mobile nav toggle functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleButton = document.querySelector('.toggle-button');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
+
+        if (toggleButton && mobileNavMenu) {
+            toggleButton.addEventListener('click', () => {
+                mobileNavMenu.classList.toggle('active');
+                toggleButton.innerHTML = mobileNavMenu.classList.contains('active')
+                    ? '<i class="fas fa-times"></i>'
+                    : '<i class="fas fa-bars"></i>';
+            });
+        }
+
+        // Avatar upload preview
+        const avatarInput = document.querySelector('#avatar-upload-input');
+        const avatarPreview = document.querySelector('.avatar-preview');
+
+        if (avatarInput && avatarPreview) {
+            avatarInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        avatarPreview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
