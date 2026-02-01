@@ -136,9 +136,10 @@ class UserController extends Controller
 
     public function viewComment($id)
     {
-        Gate::authorize('view-post', $id);
+        
         // ✅ Get the post details
         $post = Post::findOrFail($id);
+        Gate::authorize('view-post', $id);
 
         $comments = PostComment::where('post_id', $id)
             ->whereNull('parent_id')

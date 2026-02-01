@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
+
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
@@ -42,6 +42,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('view-post', function ($user, $post) {
+
+            if (is_string($post) || is_int($post)) {
+                $post = \App\Models\Post::find($post);
+            }
+
+            if (!$post) {
+                return false;
+            }
+
             return $user->id === $post->user_id;
         });
     }
