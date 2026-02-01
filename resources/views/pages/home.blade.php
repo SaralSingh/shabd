@@ -192,9 +192,10 @@
         /* --- Responsive Design --- */
         @media (max-width: 900px) {
             .navbar {
+        
                 flex-wrap: wrap; /* Allow search to wrap */
                 padding: 1rem;
-                gap: 1rem;
+                gap: 3rem;
             }
             
             .nav-left {
@@ -224,6 +225,8 @@
             
             .feed-container { padding: 1.5rem 1rem; }
         }
+
+        
     </style>
 </head>
 
@@ -268,7 +271,7 @@
         <div class="nav-search">
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="searchInput" class="search-input" 
-                placeholder="Search stories, titles, or @authors..." onkeyup="handleSearchInput()">
+                placeholder="Search stories or @authors..." onkeyup="handleSearchInput()">
         </div>
 
         <div class="nav-actions">
