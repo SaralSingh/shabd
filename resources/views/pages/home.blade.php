@@ -374,7 +374,11 @@
             posts.forEach(post => {
                 const shortDesc = (post.description || '').substring(0, 120) + '...';
                 const postDate = new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                let imageUrl = post.picture ? `/storage/${post.picture}` : `https://images.unsplash.com/photo-1507842217153-e21f60d7cf40?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80`;
+let imageUrl = (post.picture && post.picture.trim() !== "" && post.picture !== "null")
+    ? `/storage/${post.picture}`
+    : `/images/post-placeholder.jpg`;
+
+
 
                 container.innerHTML += `
                 <article class="article-card" onclick="window.location.href='/post/${post.id}'">
