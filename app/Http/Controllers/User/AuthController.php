@@ -7,6 +7,8 @@ use App\Http\Controllers\EmailController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class AuthController extends Controller
 {
@@ -36,13 +38,29 @@ class AuthController extends Controller
             'username' => 'required|string|max:50|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'avatar' => 'required|mimes:png,jpg,jpeg|max:200'
+            'avatar' => 'required|image|mimes:png,jpg,jpeg|max:10240'
         ]);
 
         try {
-            $path = $request->file('avatar')->store('images/avatars', 'public');
-            if (!$path) {
-                return back()->withErrors(['avatar' => 'Image upload failed.'])->withInput();
+            $path = null;
+
+            if ($request->hasFile('avatar')) {
+
+                $userName = $validated['username']; // ✅ from form
+                $image = $request->file('avatar');
+
+                $filename = uniqid() . '.webp';
+                $folder = "images/avatars/{$userName}";
+
+                $compressedImage = Image::make($image)
+                    ->fit(300, 300, function ($constraint) {
+                        $constraint->upsize();
+                    })
+                    ->encode('webp', 70);
+
+                Storage::disk('public')->put("{$folder}/{$filename}", $compressedImage);
+
+                $path = "{$folder}/{$filename}";
             }
 
             User::create([
@@ -54,7 +72,9 @@ class AuthController extends Controller
             ]);
 
             app(EmailController::class)->sendEmail($validated['email']);
-            return redirect()->route('login.page')->with('success', 'Registration successful. Please login.');
+
+            return redirect()->route('login.page')
+                ->with('success', 'Registration successful. Please login.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Something went wrong.'])->withInput();
         }
