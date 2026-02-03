@@ -2,44 +2,53 @@
 
 namespace App\Http\Controllers\API\public;
 
-use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\PostReaction;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;   // ✅ correct
 
 
-class PostContoller extends Controller
+
+class PostController extends Controller
 {
 
-    public function index()
-    {
-        $posts = Post::with('user')
+public function index(Request $request)
+{
+    $page = $request->get('page', 1);
+    $cacheKey = "public.posts.feed.page.$page";
+
+    $posts = Cache::remember($cacheKey, 600, function () {
+        return Post::with('user')
             ->withCount([
-                'reactions as likes' => function ($q) {
-                    $q->where('reaction', 1);
-                },
-                'reactions as dislikes' => function ($q) {
-                    $q->where('reaction', 0);
-                }
+                'reactions as likes' => fn ($q) => $q->where('reaction', 1),
+                'reactions as dislikes' => fn ($q) => $q->where('reaction', 0),
             ])
             ->latest()
-            ->get();
+            ->paginate(10);
+    });
 
-        if ($posts) {
-            return response()->json([
-                'status' => true,
-                'message' => 'Data fetched successfully',
-                'data' => ['posts' => $posts]
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data fetch failed'
-            ], 403);
-        }
-    }
+    return response()->json([
+        'status' => true,
+        'data' => $posts
+    ]);
+}
 
+   
+public function latestId()
+{
+    $latestId = Cache::remember('posts.latest.id', 600, function () {
+        // Log::info('LATEST ID DB HIT');
+        return Post::max('id');
+    });
+
+    return response()->json([
+        'latest_id' => $latestId
+    ]);
+}
 
     // PostReactionController.php
     public function getPublicReactions($postId)

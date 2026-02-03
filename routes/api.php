@@ -1,21 +1,36 @@
 <?php
 
 use App\Http\Controllers\API\private\PostReactionController;
-use App\Http\Controllers\API\public\PostContoller;
+use App\Http\Controllers\API\public\PostController;
 use App\Http\Controllers\Pages\PageController;
 use Illuminate\Support\Facades\Route;
 
+Route::prefix('public')->group(function () {
 
-Route::get('public/posts',[PostContoller::class,'index']);
-Route::get('/all-users', [PageController::class, 'getAllUsers'])->name('users.list');
-Route::get('public/post/reaction/{id}',[PostContoller::class,'getPublicReactions']);
-Route::get('public/post/comment/{post_id}',[PostContoller::class,'getComments']);
+    // --- Posts Feed ---
+    Route::prefix('posts')->group(function () {
+        Route::get('/', [PostController::class, 'index'])
+            ->middleware('throttle:60,1');   // cached but still protect
 
-Route::middleware('auth:sanctum')->group(function()
-{   
-    Route::post('post/comment',[PostReactionController::class,'saveComment']);
-    Route::post('/posts/{post}/react',[PostReactionController::class,'react']);
+        Route::get('/latest-id', [PostController::class, 'latestId'])
+            ->middleware('throttle:30,1');
+    });
 
-    Route::get('/posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
-    Route::delete('post/comment/delete/{commentId}',[PostReactionController::class,'deleteComment']);
+    // --- Public Post Data ---
+    Route::get('post/{id}/reactions', [PostController::class, 'getPublicReactions']);
+    Route::get('post/{post_id}/comments', [PostController::class, 'getComments']);
+
+    // --- Users (for search) ---
+    Route::get('users', [PageController::class, 'getAllUsers'])->middleware('throttle:40,1');
+});
+
+
+// --- Authenticated actions ---
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('post/comment', [PostReactionController::class, 'saveComment']);
+    Route::delete('post/comment/{commentId}', [PostReactionController::class, 'deleteComment']);
+
+    Route::post('posts/{post}/react', [PostReactionController::class, 'react']);
+    Route::get('posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
 });

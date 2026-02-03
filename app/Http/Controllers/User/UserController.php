@@ -9,6 +9,7 @@ use App\Models\PostReaction;
 use App\Notifications\UserActionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
@@ -75,16 +76,17 @@ class UserController extends Controller
         }
 
         // Step 3: Create the post
-        Post::create([
+        $post = Post::create([
             'title' => $validated['title'],
             'description' => $validated['description'],
             'user_id' => Auth::id(),
             'picture' => $path, // Can be null
         ]);
+        Cache::flush();
+
 
         // Notify followers
         $user = Auth::user();
-        $post = Post::latest()->where('user_id', $user->id)->first(); // Just created post
 
         foreach ($user->followers as $follower) {
             $follower->notify(new UserActionNotification([
@@ -121,6 +123,7 @@ class UserController extends Controller
                 'description' => $validated['description']
             ]
         );
+        Cache::flush();
 
         if ($status) {
             return redirect()->route('dashboard.page')->with('success', 'Post updated successfully.');
@@ -131,12 +134,14 @@ class UserController extends Controller
     {
         $post = Post::where('user_id', Auth::id())->findOrFail($id);
         $post->delete();
+        Cache::flush();
+
         return redirect()->route('dashboard.page')->with('success', 'Post deleted successfully.');
     }
 
     public function viewComment($id)
     {
-        
+
         // ✅ Get the post details
         $post = Post::findOrFail($id);
         Gate::authorize('view-post', $id);

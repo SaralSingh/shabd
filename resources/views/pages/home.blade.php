@@ -239,22 +239,22 @@
         <button onclick="toggleSidebar()" style="background:none; border:none; align-self:flex-end; font-size:1.2rem; cursor:pointer; color:var(--ink-secondary);">&times;</button>
         <div style="font-family:'Playfair Display'; font-weight:700; font-size:1.5rem; margin-bottom:1rem; color:var(--ink-primary);">Shabd.</div>
         
-        <a href="{{ route('home.page') }}" class="{{ request()->is('posts') ? 'active' : '' }}">
+        <a href="{{ route('home.page') }}" class="{{ request()->is('posts') ? 'active-link' : '' }}">
             <i class="fas fa-home"></i> Discover
         </a>
         
-        <a href="{{ route('notifications.page') }}">
+        <a href="{{ route('notifications.page') }}" class="{{ request()->is('user/account/notifications') ? 'active-link' : '' }}">
             <i class="fas fa-bell"></i> Notifications 
             @if(Auth::user()->unreadNotifications->count() > 0) 
                 <span class="nav-badge" style="margin-left:auto;">{{ Auth::user()->unreadNotifications->count() }}</span> 
             @endif
         </a>
         
-        <a href="{{ route('dashboard.page') }}"><i class="fas fa-file-alt"></i> My Posts</a>
-        <a href="{{ route('post.add.page') }}"><i class="fas fa-plus-circle"></i> Create Post</a>
-        <a href="{{ route('profile.page') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ route('post.add.page') }}" class="{{ request()->is('user/account/create/post') ? 'active-link' : '' }}"><i class="fas fa-plus-circle"></i> Create Post</a>
+        <a href="{{ route('dashboard.page') }}" class="{{ request()->is('user/account/posts') ? 'active-link' : '' }}"><i class="fas fa-file-alt"></i> My Posts</a>
+        <a href="{{ route('profile.page') }}" class="{{ request()->is('user/account/profile') ? 'active-link' : '' }}"><i class="fas fa-user"></i> Profile</a>
         
-        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="margin-top:auto; color:var(--accent-color);">
+        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color:var(--accent-color);">
             <i class="fas fa-sign-out-alt"></i> Sign Out
         </a>
     </aside>
@@ -317,167 +317,170 @@
     
     @include('partials.auth-token')
     <script>
-        // --- Sidebar Logic ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if(sidebar) {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('show');
-            }
+    // --- Sidebar Logic ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
         }
+    }
 
-        // --- Sticky Nav Shadow Logic ---
-        window.addEventListener('scroll', function() {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 10) {
-                navbar.style.boxShadow = "0 4px 20px rgba(0,0,0,0.03)";
-            } else {
-                navbar.style.boxShadow = "none";
-            }
+    // --- Sticky Nav Shadow Logic ---
+    window.addEventListener('scroll', function () {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 10) {
+            navbar.style.boxShadow = "0 4px 20px rgba(0,0,0,0.03)";
+        } else {
+            navbar.style.boxShadow = "none";
+        }
+    });
+
+    // --- Feed Logic ---
+    const url = "{{ config('app.url') }}";
+    let latestPostId = 0;
+    let allPosts = [];
+    let currentPage = 1;
+    let lastPage = 1;
+    let isLoading = false;
+    let debounceTimer;
+
+    // --- Toast ---
+    function showToast(title, author, postId) {
+        const toast = document.getElementById('newPostToast');
+        document.getElementById('toastContent').innerHTML =
+            `New: <strong>${title}</strong><br><small>by ${author}</small>`;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+
+        document.getElementById('toastContent').onclick = function () {
+            window.location.href = `/post/${postId}`;
+        };
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+        }, 5000);
+    }
+
+    // --- Render fresh posts (used for first load & search) ---
+    function renderPosts(posts) {
+        const container = document.getElementById('body');
+        container.innerHTML = '';
+        appendPosts(posts);
+    }
+
+    // --- Append posts (used for infinite scroll) ---
+    function appendPosts(posts) {
+        const container = document.getElementById('body');
+
+        posts.forEach(post => {
+            const shortDesc = (post.description || '').substring(0, 120) + '...';
+            const postDate = new Date(post.created_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            let imageUrl = (post.picture && post.picture.trim() !== "" && post.picture !== "null")
+                ? `/storage/${post.picture}`
+                : `/images/post-placeholder.jpg`;
+
+            container.innerHTML += `
+            <article class="article-card" onclick="window.location.href='/post/${post.id}'">
+                <div class="article-image-wrapper">
+                    <img src="${imageUrl}" alt="${post.title}" class="article-image">
+                </div>
+                <div class="article-content">
+                    <div>
+                        <div class="article-meta">
+                            <span>@${post.user.username}</span> | <span>${postDate}</span>
+                        </div>
+                        <h3 class="article-title">${post.title}</h3>
+                        <p class="article-excerpt">${shortDesc}</p>
+                    </div>
+                    <div class="article-footer">
+                        <span style="font-weight:600; color:var(--ink-primary)">${post.user.name}</span>
+                        <div class="stats-group">
+                            <span><i class="fas fa-heart" style="color:#e11d48"></i> ${post.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            </article>`;
         });
+    }
 
-        // --- Feed Logic ---
-        const url = "{{ config('app.url') }}";
-        let latestPostId = 0;
-        let allPosts = [];
-        let currentToastPostId = null;
-        let debounceTimer;
+    // --- Fetch first page ---
+    function fetchInitialPosts() {
+        currentPage = 1;
 
-        // Toast logic
-        function showToast(title, author, postId) {
-            const toast = document.getElementById('newPostToast');
-            document.getElementById('toastContent').innerHTML = `New: <strong>${title}</strong><br><small>by ${author}</small>`;
-            currentToastPostId = postId;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
-            
-            document.getElementById('toastContent').onclick = function() {
-                window.location.href = `/post/${postId}`;
-            };
+        fetch(`${url}/api/public/posts?page=1`)
+            .then(res => res.json())
+            .then(data => {
+                const paginator = data.data;
+                lastPage = paginator.last_page;
+                allPosts = paginator.data;
 
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; }, 5000);
-        }
-
-        // Render Posts
-        function renderPosts(posts, isUserSearch = false) {
-            const container = document.getElementById('body');
-            const noResults = document.getElementById('noResults');
-            const noUserFound = document.getElementById('noUserFound');
-
-            container.innerHTML = '';
-            noResults.style.display = 'none';
-            noUserFound.style.display = 'none';
-
-            if (!posts.length) {
-                if (isUserSearch) noUserFound.style.display = 'block';
-                else noResults.style.display = 'block';
-                return;
-            }
-
-            posts.forEach(post => {
-                const shortDesc = (post.description || '').substring(0, 120) + '...';
-                const postDate = new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-let imageUrl = (post.picture && post.picture.trim() !== "" && post.picture !== "null")
-    ? `/storage/${post.picture}`
-    : `/images/post-placeholder.jpg`;
-
-
-
-                container.innerHTML += `
-                <article class="article-card" onclick="window.location.href='/post/${post.id}'">
-                    <div class="article-image-wrapper">
-                        <img src="${imageUrl}" alt="${post.title}" class="article-image">
-                    </div>
-                    <div class="article-content">
-                        <div>
-                            <div class="article-meta">
-                                <span>@${post.user.username}</span> | <span>${postDate}</span>
-                            </div>
-                            <h3 class="article-title">${post.title}</h3>
-                            <p class="article-excerpt">${shortDesc}</p>
-                        </div>
-                        <div class="article-footer">
-                            <span style="font-weight:600; color:var(--ink-primary)">${post.user.name}</span>
-                            <div class="stats-group">
-                                <span><i class="fas fa-heart" style="color:#e11d48"></i> ${post.likes}</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>`;
-            });
-        }
-
-        // Search Logic
-        function handleSearchInput() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const query = document.getElementById('searchInput').value.toLowerCase().trim();
-                if (query.startsWith('@')) {
-                    filterUsersByUsername(query.slice(1));
-                } else {
-                    const filtered = allPosts.filter(post => 
-                        post.title.toLowerCase().includes(query) || 
-                        post.user.name.toLowerCase().includes(query)
-                    );
-                    renderPosts(filtered);
+                if (allPosts.length) {
+                    latestPostId = allPosts[0].id;
                 }
-            }, 300);
+
+                renderPosts(allPosts);
+            });
+    }
+
+    // --- Load next page on scroll ---
+    function loadNextPage() {
+        if (isLoading) return;
+        if (currentPage >= lastPage) return;
+
+        isLoading = true;
+        currentPage++;
+
+        fetch(`${url}/api/public/posts?page=${currentPage}`)
+            .then(res => res.json())
+            .then(data => {
+                const posts = data.data.data;
+                appendPosts(posts);
+                isLoading = false;
+            });
+    }
+
+    // --- Infinite Scroll Trigger ---
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+            loadNextPage();
         }
+    });
 
-        function filterUsersByUsername(username) {
-            fetch(`${url}/api/all-users`)
-                .then(res => res.json())
-                .then(data => {
-                    const filteredUsers = data.users.filter(user => user.username.toLowerCase().includes(username));
-                    const container = document.getElementById('body');
-                    container.innerHTML = '';
-                    
-                    if(!filteredUsers.length) { document.getElementById('noUserFound').style.display = 'block'; return; }
-                    document.getElementById('noUserFound').style.display = 'none';
-
-                    filteredUsers.forEach(user => {
-                        container.innerHTML += `
-                        <div class="article-card" style="grid-template-columns: 80px 1fr; align-items:center; padding: 1.5rem; min-height:auto;" onclick="window.location.href='/user/profile/${user.id}'">
-                            <div style="width:60px; height:60px; border-radius:50%; background:#ddd; overflow:hidden; margin:0 auto;">
-                                <img src="https://ui-avatars.com/api/?name=${user.name}&background=random" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                            <div style="padding-left: 1.5rem;">
-                                <h3 class="article-title" style="margin-bottom:0.2rem; font-size:1.2rem;">${user.name}</h3>
-                                <p style="color:var(--accent-color); font-weight:500;">@${user.username}</p>
-                            </div>
-                        </div>`;
-                    });
-                });
-        }
-
-        // Fetch Logic
-        function fetchInitialPosts() {
-            fetch(`${url}/api/public/posts`)
-                .then(res => res.json())
-                .then(data => {
-                    allPosts = data.data.posts;
-                    if(allPosts.length) {
-                        latestPostId = allPosts[0].id;
-                        renderPosts(allPosts);
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-
-        function checkForNewPost() {
-            fetch(`${url}/api/public/posts`).then(res => res.json()).then(data => {
-                const newPosts = data.data.posts;
-                if (newPosts.length && newPosts[0].id > latestPostId) {
-                    allPosts = newPosts;
-                    showToast(newPosts[0].title, newPosts[0].user.name, newPosts[0].id);
-                    latestPostId = newPosts[0].id;
+    // --- Check for new posts (polling) ---
+    function checkForNewPost() {
+        fetch(`${url}/api/public/posts/latest-id`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.latest_id > latestPostId) {
+                    latestPostId = data.latest_id;
+                    fetchInitialPosts();
                 }
             });
-        }
+    }
 
-        fetchInitialPosts();
-        setInterval(checkForNewPost, 10000);
-    </script>
+    // --- Search ---
+    function handleSearchInput() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = allPosts.filter(post =>
+                post.title.toLowerCase().includes(query) ||
+                post.user.name.toLowerCase().includes(query)
+            );
+            renderPosts(filtered);
+        }, 300);
+    }
+
+    // --- Init ---
+    fetchInitialPosts();
+    setInterval(checkForNewPost, 60000);
+</script>
+
 </body>
 </html>
