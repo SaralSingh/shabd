@@ -610,7 +610,7 @@
         }
 
         function fetchComments(postId) {
-            fetch(`${url}/api/public/post/comment/${postId}?sort=newest`)
+            fetch(`${url}/api/public/post/${postId}/comments`)
             .then(res => res.json())
             .then(data => {
                 const list = document.getElementById(`comments-list-${postId}`);
