@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use App\Models\Otp;
+use Illuminate\Support\Carbon;
+
 
 class AuthController extends Controller
 {
@@ -19,66 +22,76 @@ class AuthController extends Controller
 
 
     public function registerCheck(Request $request)
-    {
-        $otp = $request->otp;
-        $email = $request->email;
+{
+    // 1) Validate basic inputs first (email needed for OTP gate)
+    $validated = $request->validate([
+        'name' => 'required|string|max:100',
+        'username' => 'required|string|max:50|unique:users,username',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6|confirmed',
+        'avatar' => 'required|image|mimes:png,jpg,jpeg|max:10240'
+    ]);
 
-        if ($email != session('email')) {
-            return redirect()->back()->withErrors(['email' => 'Email does not match.'])->withInput();
+    $email = $validated['email'];
+
+    // 2) OTP gate (DB based)
+    $otpRecord = Otp::where('email', $email)
+        ->where('verified', true)
+        ->latest()
+        ->first();
+
+    if (!$otpRecord) {
+        return back()->withErrors(['otp' => 'Please verify OTP first'])->withInput();
+    }
+
+    if (Carbon::parse($otpRecord->expires_at)->isPast()) {
+        return back()->withErrors(['otp' => 'OTP expired'])->withInput();
+    }
+
+    try {
+        // 3) Avatar processing
+        $path = null;
+
+        if ($request->hasFile('avatar')) {
+            $userName = $validated['username'];
+            $image = $request->file('avatar');
+
+            $filename = uniqid() . '.webp';
+            $folder = "images/avatars/{$userName}";
+
+            $compressedImage = Image::make($image)
+                ->fit(300, 300, function ($constraint) {
+                    $constraint->upsize();
+                })
+                ->encode('webp', 70);
+
+            Storage::disk('public')->put("{$folder}/{$filename}", $compressedImage);
+
+            $path = "{$folder}/{$filename}";
         }
 
-        if ($otp != session('otp')) {
-            return redirect()->back()->withErrors(['otp' => 'Invalid OTP.'])->withInput();
-        }
-
-        session()->forget(['otp', 'email']);
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'username' => 'required|string|max:50|unique:users,username',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'avatar' => 'required|image|mimes:png,jpg,jpeg|max:10240'
+        // 4) Create user
+        User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $email,
+            'password' => bcrypt($validated['password']),
+            'avatar' => $path
         ]);
 
-        try {
-            $path = null;
+        // 5) Cleanup OTPs for this email (important)
+        Otp::where('email', $email)->delete();
 
-            if ($request->hasFile('avatar')) {
+        // 6) Welcome mail
+        // app(EmailController::class)->sendEmail($email);
 
-                $userName = $validated['username']; // ✅ from form
-                $image = $request->file('avatar');
+        return redirect()->route('login.page')
+            ->with('success', 'Registration successful. Please login.');
 
-                $filename = uniqid() . '.webp';
-                $folder = "images/avatars/{$userName}";
-
-                $compressedImage = Image::make($image)
-                    ->fit(300, 300, function ($constraint) {
-                        $constraint->upsize();
-                    })
-                    ->encode('webp', 70);
-
-                Storage::disk('public')->put("{$folder}/{$filename}", $compressedImage);
-
-                $path = "{$folder}/{$filename}";
-            }
-
-            User::create([
-                'name' => $validated['name'],
-                'username' => $validated['username'],
-                'email' => $validated['email'],
-                'password' => bcrypt($validated['password']),
-                'avatar' => $path
-            ]);
-
-            app(EmailController::class)->sendEmail($validated['email']);
-
-            return redirect()->route('login.page')
-                ->with('success', 'Registration successful. Please login.');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Something went wrong.'])->withInput();
-        }
+    } catch (\Exception $e) {
+        return back()->withErrors(['error' => 'Something went wrong.'])->withInput();
     }
+}
 
     public function loginPage()
     {

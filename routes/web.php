@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::post('otp', [EmailController::class, 'otpSender']);
+
 Route::get('/', [PageController::class, 'mainPage'])->name('main.page');
 Route::get('/posts', [PageController::class, 'homePage'])->name('home.page');
 Route::get('/post/{id}', [PageController::class, 'fetchUserPost'])->name('post.page');
@@ -24,7 +24,7 @@ Route::prefix('account')->middleware(GuestMiddleware::class)->group(function () 
     Route::get('register', [AuthController::class, 'registerPage'])->name('register.page');
     Route::get('login', [AuthController::class, 'loginPage'])->name('login.page');
 
-    Route::post('register', [AuthController::class, 'registerCheck']) ->middleware('throttle:register')->name('register.check');
+    Route::post('register', [AuthController::class, 'registerCheck'])->middleware('throttle:register')->name('register.check');
     Route::post('login', [AuthController::class, 'loginCheck'])->middleware('throttle:login')->name('login.check');
 });
 

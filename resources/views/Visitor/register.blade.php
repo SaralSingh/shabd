@@ -15,6 +15,7 @@
             --paper-bg: #f5f5f0;          /* Warm Grey/Beige */
             --card-bg: #ffffff;
             --accent-color: #bc4749;      /* Muted Terracotta Red */
+            --success-color: #10b981;     /* Green for Verify */
             --border-line: #e4e4e7;
             
             --radius-sharp: 4px;
@@ -25,7 +26,6 @@
         body {
             font-family: 'DM Sans', sans-serif;
             background-color: var(--paper-bg);
-            /* Grain Texture */
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
             color: var(--ink-primary);
             height: 100vh;
@@ -33,14 +33,14 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow: hidden; /* Prevent body scroll, handle inside card */
+            overflow: hidden; 
         }
 
         .main-card {
             background: var(--card-bg);
             width: 100%;
             max-width: 1100px;
-            height: 90vh; /* Fixed height for split effect */
+            height: 90vh; 
             display: grid;
             grid-template-columns: 35% 65%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.04);
@@ -88,7 +88,7 @@
         /* --- Right Side: The Form (Scrollable) --- */
         .form-panel {
             padding: 4rem;
-            overflow-y: auto; /* Independent scroll */
+            overflow-y: auto; 
             display: flex;
             flex-direction: column;
         }
@@ -101,14 +101,12 @@
         }
         .form-header p { color: var(--ink-secondary); font-size: 0.95rem; margin-top: 5px; }
 
-        /* Grid for compact fields */
         .grid-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
         }
 
-        /* Minimalist Inputs */
         .input-group { margin-bottom: 1.8rem; position: relative; }
         
         .input-group label {
@@ -139,7 +137,6 @@
             border-bottom-color: var(--ink-primary);
         }
 
-        /* Specific File Input Styling */
         .input-group input[type="file"] {
             font-size: 0.9rem;
             padding-top: 0.5rem;
@@ -162,7 +159,7 @@
             border: 1px solid var(--border-line);
             background: transparent;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             white-space: nowrap;
         }
         .btn-otp:hover {
@@ -170,7 +167,19 @@
             background: #fcfcfc;
         }
 
-        /* Submit Button */
+        /* NEW: Verify Mode Style (Triggers when button changes) */
+        .btn-otp.verify-mode {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+        .btn-otp.verify-mode:hover {
+            background-color: #059669; /* Darker green */
+        }
+
+        /* Submit Button (Hidden or Disabled initially? 
+           Based on your flow, the Verify button submits, 
+           so we can keep this or hide it depending on preference) */
         .btn-submit {
             background-color: var(--ink-primary);
             color: white;
@@ -187,7 +196,6 @@
         }
         .btn-submit:hover { background-color: var(--accent-color); }
 
-        /* Footer / Links */
         .login-link {
             text-align: center;
             margin-top: 2rem;
@@ -201,14 +209,8 @@
         }
         .login-link a:hover { text-decoration: underline; }
 
-        .error-txt {
-            color: #b91c1c;
-            font-size: 0.75rem;
-            margin-top: 5px;
-            display: block;
-        }
+        .error-txt { color: #b91c1c; font-size: 0.75rem; margin-top: 5px; display: block; }
 
-        /* Responsive */
         @media (max-width: 900px) {
             body { height: auto; overflow-y: auto; display: block; }
             .main-card { 
@@ -246,7 +248,7 @@
                 <p>Join the community and start writing today.</p>
             </div>
 
-            <form method="POST" action="{{ route('register.check') }}" enctype="multipart/form-data">
+            <form id="registerForm" method="POST" action="{{ route('register.check') }}" enctype="multipart/form-data">
                 @csrf
 
                 <div class="grid-row">
@@ -292,7 +294,8 @@
                     <label for="otp">Verification Code</label>
                     <div class="otp-wrapper">
                         <input type="text" name="otp" id="otp" placeholder="Enter the code sent to email">
-                        <button type="button" id="get-otp" class="btn-otp">Get OTP</button>
+                        
+                        <button type="button" id="otpBtn" class="btn-otp" onclick="requestOtp()">Get OTP</button>
                     </div>
                     @error('otp') <span class="error-txt">{{ $message }}</span> @enderror
                 </div>
@@ -308,8 +311,90 @@
     </main>
 
     <script>
-        window.BASE_URL = "{{ config('app.url') }}";
+        const url = "{{ config('app.url') }}";
+        // 1. Function to send OTP (Initial State)
+        function requestOtp() {
+            let email = document.getElementById('email').value;
+            let otpBtn = document.getElementById('otpBtn');
+
+            if (!email) {
+                alert("Please enter your email address first.");
+                return;
+            }
+
+            // UI Feedback
+            otpBtn.innerText = "Sending...";
+            otpBtn.disabled = true;
+
+            fetch(`${url}/api/public/get-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // On Success: Change Button to "Verify" Mode
+                alert(data.message || "OTP Sent to your email.");
+                
+                // Switch Button Visuals
+                otpBtn.disabled = false;
+                otpBtn.innerText = "Verify OTP"; 
+                otpBtn.classList.add('verify-mode'); // Turns Green
+                
+                // Switch Button Logic
+                // We remove the old onclick and set the new one
+                otpBtn.removeAttribute('onclick');
+                otpBtn.onclick = verifyAndSubmit; 
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error sending OTP. Please try again.");
+                otpBtn.innerText = "Get OTP";
+                otpBtn.disabled = false;
+            });
+        }
+
+        // 2. Function to Verify and Submit (Your requested Logic)
+        function verifyAndSubmit() {
+            let email = document.querySelector('input[name="email"]').value;
+            let otp = document.querySelector('input[name="otp"]').value;
+            let otpBtn = document.getElementById('otpBtn');
+
+            // Simple validation
+            if (!otp) {
+                alert("Please enter the OTP.");
+                return;
+            }
+
+            otpBtn.innerText = "Verifying...";
+
+            fetch(`${url}/api/public/verify-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ email: email, otp: otp })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === 'OTP verified') {
+                    // Success: Submit the whole form
+                    otpBtn.innerText = "OTP verified";
+                } else {
+                    alert(data.message);
+                    otpBtn.innerText = "Verify OTP"; // Reset text on failure
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred during verification.");
+                otpBtn.innerText = "Verify OTP";
+            });
+        }
     </script>
-    <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

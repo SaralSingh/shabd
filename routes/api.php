@@ -1,13 +1,16 @@
 <?php
 
-use App\Http\Controllers\API\private\PostReactionController;
-use App\Http\Controllers\API\public\PostController;
-use App\Http\Controllers\Pages\PageController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\Pages\PageController;
+use App\Http\Controllers\API\public\PostController;
+use App\Http\Controllers\API\private\PostReactionController;
 
 Route::prefix('public')->group(function () {
 
     // --- Posts Feed ---
+    Route::post('/get-otp', [EmailController::class, 'otpSender'])->middleware('throttle:otp');
+    Route::post('/verify-otp', [EmailController::class, 'verifyOtp']);
     Route::prefix('posts')->group(function () {
         Route::get('/', [PostController::class, 'index'])
             ->middleware('throttle:60,1');   // cached but still protect
