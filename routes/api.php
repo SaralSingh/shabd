@@ -11,6 +11,8 @@ Route::prefix('public')->group(function () {
     // --- Posts Feed ---
     Route::post('/get-otp', [EmailController::class, 'otpSender'])->middleware('throttle:otp');
     Route::post('/verify-otp', [EmailController::class, 'verifyOtp']);
+    Route::get('/post/reaction/${postId}', [PostController::class, 'getPublicReactions']);
+    Route::get('/post/{postId}/comments', [PostController::class, 'getComments']);
     Route::prefix('posts')->group(function () {
         Route::get('/', [PostController::class, 'index'])
             ->middleware('throttle:60,1');   // cached but still protect
@@ -20,8 +22,6 @@ Route::prefix('public')->group(function () {
     });
 
     // --- Public Post Data ---
-    Route::get('post/{id}/reactions', [PostController::class, 'getPublicReactions']);
-    Route::get('post/{post_id}/comments', [PostController::class, 'getComments']);
 
     // --- Users (for search) ---
     Route::get('users', [PageController::class, 'getAllUsers'])->middleware('throttle:40,1');
