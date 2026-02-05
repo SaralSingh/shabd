@@ -32,7 +32,7 @@ Route::prefix('public')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('post/comment', [PostReactionController::class, 'saveComment']);
-    Route::delete('post/comment/{commentId}', [PostReactionController::class, 'deleteComment']);
+    Route::delete('post/comment/delete/{commentId}', [PostReactionController::class, 'deleteComment']);
 
     Route::post('posts/{post}/react', [PostReactionController::class, 'react']);
     Route::get('posts/{post}/reactions', [PostReactionController::class, 'getReactions']);

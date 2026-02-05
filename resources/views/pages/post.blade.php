@@ -706,7 +706,7 @@
 
         function deleteComment(cId, pId) {
             if(!confirm("Delete this comment?")) return;
-            fetch(`${url}/api/public/post/comment/delete/${cId}`, {
+            fetch(`${url}/api/post/comment/delete/${cId}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             }).then(res=>res.json()).then(d=>{
                 if(d.status) fetchComments(pId);
