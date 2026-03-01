@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /account/
+Disallow: /user/account/
+Disallow: /api/
+
+Sitemap: https://appsaral.alwaysdata.net/sitemap.xml

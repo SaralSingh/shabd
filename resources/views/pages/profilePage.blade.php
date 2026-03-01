@@ -3,7 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $user->name }} — Shabd Profile</title>
+    <title>{{ $user->name }} (@ {{ $user->username }}) — Shabd Profile</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="View the official Shabd profile of {{ $user->name }} (@ {{ $user->username }}). Read their latest stories, thoughts, and wisdom shared on the Shabd platform, curated by Saral Singh.">
+    <meta name="keywords" content="{{ $user->name }}, {{ $user->username }}, Shabd, blogger, writer, Saral Singh, stories, wisdom">
+    <meta name="author" content="Saral Singh">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $user->name }} — Shabd Profile">
+    <meta property="og:description" content="Explore stories and wisdom from {{ $user->name }} on Shabd. Join the community today.">
+    <meta property="og:image" content="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name='.$user->name.'&background=random' }}">
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     

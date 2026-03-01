@@ -1,528 +1,237 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draft New Story — Shabd Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+@extends('layouts.app')
+
+@section('title', 'Draft New Story — Shabd Studio')
+
+@push('styles')
+<style>
+/* --- Editor Layout --- */
+.editor-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 0 20px;
+}
+
+.editor-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--border-line);
+    padding-bottom: 1rem;
+}
+
+.editor-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink-primary);
+}
+
+.editor-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-line);
+    border-radius: var(--radius-sharp);
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+/* Input Fields */
+.form-group {
+    position: relative;
+    margin-bottom: 2.5rem;
+}
+
+.input-label {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    font-size: 1rem;
+    color: var(--ink-secondary);
+    pointer-events: none;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+}
+
+.input-field {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-line);
+    padding: 10px 0;
+    font-size: 1.1rem;
+    color: var(--ink-primary);
+    transition: border-color 0.3s;
+    border-radius: 0;
+}
+
+.input-field:focus {
+    outline: none;
+    border-bottom-color: var(--ink-primary);
+}
+
+.input-field:focus ~ .input-label,
+.input-field:valid ~ .input-label {
+    top: -15px;
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* File Upload */
+.file-upload-wrapper {
+    margin-bottom: 2.5rem;
+    border: 1px dashed var(--border-line);
+    padding: 2rem;
+    text-align: center;
+    border-radius: var(--radius-sharp);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+}
+
+.file-upload-wrapper:hover {
+    border-color: var(--ink-secondary);
+    background: #f0f0f0;
+}
+
+.file-input { display: none; }
+
+.upload-placeholder { color: var(--ink-secondary); font-size: 0.9rem; }
+.upload-placeholder i { display: block; font-size: 1.5rem; margin-bottom: 10px; color: var(--ink-primary); }
+
+#preview-container {
+    margin-top: 15px;
+    display: none;
+}
+#preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: var(--radius-sharp);
+    display: block;
+    margin: 0 auto;
+}
+
+/* Buttons */
+.action-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 3rem;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-sharp);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border-line);
+    color: var(--ink-secondary);
+}
+.btn-cancel:hover { border-color: var(--ink-secondary); color: var(--ink-primary); }
+
+.btn-submit {
+    background: var(--ink-primary);
+    color: white;
+    border: none;
+}
+.btn-submit:hover { background: var(--accent-color); }
+
+.error-msg {
+    color: #e11d48;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .editor-card { padding: 1.5rem; }
+    .editor-title { font-size: 1.5rem; }
+}
+</style>
+@endpush
+
+@section('content')
+<main class="editor-container">
     
-    <style>
-        :root {
-            /* SHABD Design System */
-            --ink-primary: #1c1c1e;       
-            --ink-secondary: #52525b;     
-            --paper-bg: #f5f5f0;          
-            --card-bg: #ffffff;
-            --accent-color: #bc4749;      
-            --border-line: #e4e4e7;
-            --radius-sharp: 4px;
-        }
+    <header class="editor-header">
+        <h1 class="editor-title">Draft New Story</h1>
+    </header>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--paper-bg);
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            color: var(--ink-primary);
-            min-height: 100vh;
-        }
-
-               /* --- Unified Navbar --- */
-        .navbar {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            background: rgba(245, 245, 240, 0.95);
-            backdrop-filter: blur(8px);
-            position: sticky; 
-            top: 0; 
-            z-index: 100;
-            flex-wrap: nowrap; /* Default no wrap */
-            gap: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        /* Logo Section */
-        .nav-left {
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            flex-shrink: 0; /* Don't shrink logo */
-        }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-decoration: none;
-            color: var(--ink-primary);
-        }
-
-        /* Search Section (Centered) */
-        .nav-search {
-            flex-grow: 1;
-            max-width: 500px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 0.7rem 1rem 0.7rem 2.8rem;
-            border: 1px solid var(--border-line);
-            border-radius: 50px;
-            background: var(--card-bg);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
-            color: var(--ink-primary);
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--ink-primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 1.2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--ink-secondary);
-            font-size: 0.9rem;
-            pointer-events: none;
-        }
-
-        /* Actions Section */
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .nav-actions a {
-            text-decoration: none;
-            color: var(--ink-primary);
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-left: 1.5rem;
-            transition: color 0.2s;
-        }
-        .nav-actions a:hover { color: var(--accent-color); }
-
-        .active-link {
-            color: var(--ink-primary) !important;
-            font-weight: 700 !important;
-            border-bottom: 2px solid var(--accent-color);
-        }
-
-        .nav-badge {
-            background-color: var(--accent-color);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 12px;
-            margin-left: 6px;
-            display: inline-block;
-        }
-
-        /* Menu Button (Mobile) */
-        .menu-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--ink-primary);
-            cursor: pointer;
-            padding: 5px;
-            display: none; /* Hidden on desktop */
-        }
-
-        /* --- Sidebar & Overlay --- */
-        .sidebar {
-            position: fixed; top: 0; left: -300px; width: 300px; height: 100vh;
-            background: var(--paper-bg); border-right: 1px solid var(--border-line);
-            padding: 2rem; z-index: 1000; transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column; gap: 1.5rem;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.05);
-        }
-        .sidebar.open { left: 0; }
-        .sidebar a { text-decoration: none; color: var(--ink-secondary); font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap:10px; }
-        .sidebar a:hover { color: var(--ink-primary); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        .overlay.show { opacity: 1; pointer-events: auto; }
-
-        /* --- Feed Layout --- */
-        .feed-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 3rem 1.5rem;
-            min-height: 60vh;
-        }
-
-        /* Article Card */
-        .article-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-line);
-            margin-bottom: 2.5rem;
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            border-radius: var(--radius-sharp);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-        .article-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-color: var(--ink-primary); }
+    <div class="editor-card">
         
-        .article-image-wrapper { width: 100%; height: 100%; overflow: hidden; background: #eee; }
-        .article-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-        .article-card:hover .article-image { transform: scale(1.05); }
-        
-        .article-content { padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; }
-        .article-meta { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary); margin-bottom: 0.8rem; }
-        .article-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--ink-primary); margin-bottom: 0.8rem; line-height: 1.3; }
-        .article-excerpt { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink-secondary); line-height: 1.6; margin-bottom: 1.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .article-footer { border-top: 1px solid var(--border-line); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--ink-secondary); }
+        <form action="{{ route('post.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-        /* --- Responsive Design --- */
-        @media (max-width: 900px) {
-            .navbar {
-        
-                flex-wrap: wrap; /* Allow search to wrap */
-                padding: 1rem;
-                gap: 3rem;
-            }
-            
-            .nav-left {
-                flex-grow: 1; /* Logo takes left space */
-            }
+            <div class="form-group">
+                <input type="text" name="title" id="title" class="input-field" 
+                       value="{{ old('title') }}" required>
+                <label for="title" class="input-label">Headline</label>
+                @error('title') <span class="error-msg">{{ $message }}</span> @enderror
+            </div>
 
-            .nav-actions {
-                display: none; /* Hide standard links on mobile */
-            }
+            <div class="form-group">
+                <textarea name="description" id="description" class="input-field" 
+                          style="min-height: 250px; resize: vertical; line-height: 1.6;" 
+                          required>{{ old('description') }}</textarea>
+                <label for="description" class="input-label">Write your story here...</label>
+                @error('description') <span class="error-msg">{{ $message }}</span> @enderror
+            </div>
 
-            .menu-btn {
-                display: block; /* Show hamburger */
-            }
-
-            /* Search bar takes full width on a new line */
-            .nav-search {
-                order: 3; 
-                width: 100%;
-                max-width: none;
-                margin: 0;
-            }
-
-            .article-card {
-                grid-template-columns: 1fr;
-                grid-template-rows: 250px auto;
-            }
-            
-            .feed-container { padding: 1.5rem 1rem; }
-        }
-  
-
-        /* --- Editor Layout --- */
-        .editor-container {
-            max-width: 800px;
-            margin: 3rem auto;
-            padding: 0 20px;
-        }
-
-        .editor-header {
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dashed var(--border-line);
-            padding-bottom: 1rem;
-        }
-
-        .editor-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--ink-primary);
-        }
-
-        .editor-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-line);
-            border-radius: var(--radius-sharp);
-            padding: 3rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-        }
-
-        /* Input Fields */
-        .form-group {
-            position: relative;
-            margin-bottom: 2.5rem;
-        }
-
-        .input-label {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            font-size: 1rem;
-            color: var(--ink-secondary);
-            pointer-events: none;
-            transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
-        }
-
-        .input-field {
-            width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--border-line);
-            padding: 10px 0;
-            font-size: 1.1rem;
-            color: var(--ink-primary);
-            transition: border-color 0.3s;
-            border-radius: 0;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-bottom-color: var(--ink-primary);
-        }
-
-        .input-field:focus ~ .input-label,
-        .input-field:valid ~ .input-label {
-            top: -15px;
-            font-size: 0.75rem;
-            color: var(--accent-color);
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        /* File Upload */
-        .file-upload-wrapper {
-            margin-bottom: 2.5rem;
-            border: 1px dashed var(--border-line);
-            padding: 2rem;
-            text-align: center;
-            border-radius: var(--radius-sharp);
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #fafafa;
-        }
-        
-        .file-upload-wrapper:hover {
-            border-color: var(--ink-secondary);
-            background: #f0f0f0;
-        }
-
-        .file-input { display: none; }
-        
-        .upload-placeholder { color: var(--ink-secondary); font-size: 0.9rem; }
-        .upload-placeholder i { display: block; font-size: 1.5rem; margin-bottom: 10px; color: var(--ink-primary); }
-
-        #preview-container {
-            margin-top: 15px;
-            display: none;
-        }
-        #preview-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: var(--radius-sharp);
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* Buttons */
-        .action-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 3rem;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: var(--radius-sharp);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border-line);
-            color: var(--ink-secondary);
-        }
-        .btn-cancel:hover { border-color: var(--ink-secondary); color: var(--ink-primary); }
-
-        .btn-submit {
-            background: var(--ink-primary);
-            color: white;
-            border: none;
-        }
-        .btn-submit:hover { background: var(--accent-color); }
-
-        .error-msg {
-            color: #e11d48;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .editor-card { padding: 1.5rem; }
-            .editor-title { font-size: 1.5rem; }
-        }
-    </style>
-</head>
-
-<body>
-    @php $user = Auth::user(); @endphp
-
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-    @auth
-    <aside class="sidebar" id="sidebar">
-        <button onclick="toggleSidebar()" style="background:none; border:none; align-self:flex-end; font-size:1.2rem; cursor:pointer; color:var(--ink-secondary);">&times;</button>
-        <div style="font-family:'Playfair Display'; font-weight:700; font-size:1.5rem; margin-bottom:1rem; color:var(--ink-primary);">Shabd.</div>
-        
-        <a href="{{ route('home.page') }}" class="{{ request()->is('posts') ? 'active-link' : '' }}">
-            <i class="fas fa-home"></i> Discover
-        </a>
-        
-        <a href="{{ route('notifications.page') }}" class="{{ request()->is('user/account/notifications') ? 'active-link' : '' }}">
-            <i class="fas fa-bell"></i> Notifications 
-            @if(Auth::user()->unreadNotifications->count() > 0) 
-                <span class="nav-badge" style="margin-left:auto;">{{ Auth::user()->unreadNotifications->count() }}</span> 
-            @endif
-        </a>
-        
-        <a href="{{ route('post.add.page') }}" class="{{ request()->is('user/account/create/post') ? 'active-link' : '' }}"><i class="fas fa-plus-circle"></i> Create Post</a>
-        <a href="{{ route('dashboard.page') }}" class="{{ request()->is('user/account/posts') ? 'active-link' : '' }}"><i class="fas fa-file-alt"></i> My Posts</a>
-        <a href="{{ route('profile.page') }}" class="{{ request()->is('user/account/profile') ? 'active-link' : '' }}"><i class="fas fa-user"></i> Profile</a>
-        
-        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color:var(--accent-color);">
-            <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
-    </aside>
-    @endauth
-
-    <nav class="navbar">
-        <div class="nav-left">
-            @auth
-                <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            @endauth
-            <a href="{{ route('main.page') }}" class="logo">Shabd.</a>
-        </div>
-
-
-        <div class="nav-actions">
-            <a href="{{ route('home.page') }}" class="{{ request()->is('posts') ? 'active-link' : '' }}">Discover</a>
-
-            @auth
-                <a href="{{ route('notifications.page') }}" class="{{ request()->is('user/account/notifications') ? 'active-link' : '' }}" style="display:inline-flex; align-items:center;">
-                    Notifications
-                    @if (Auth::user()->unreadNotifications->count() > 0)
-                        <span class="nav-badge">{{ Auth::user()->unreadNotifications->count() }}</span>
-                    @endif
-                </a>
-
-                <a href="{{ route('post.add.page') }}" class="{{ request()->is('user/account/create/post') ? 'active-link' : '' }}">Write</a>
-                <a href="{{ route('dashboard.page') }}" class="{{ request()->is('user/account/posts') ? 'active-link' : '' }}">My Posts</a>
-                
-                <a href="{{ route('profile.page') }}" style="font-weight:700;" class="{{ request()->is('user/account/profile') ? 'active-link' : '' }}">{{ Auth::user()->username }}</a>
-                
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color:var(--accent-color);">Sign Out</a>
-            @else
-                <a href="{{ route('login.page') }}">Sign In</a>
-                <a href="{{ route('register.page') }}" style="font-weight:700;">Join</a>
-            @endguest
-        </div>
-    </nav>
-
-    <main class="editor-container">
-        
-        <header class="editor-header">
-            <h1 class="editor-title">Draft New Story</h1>
-        </header>
-
-        <div class="editor-card">
-            
-            <form action="{{ route('post.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-
-                <div class="form-group">
-                    <input type="text" name="title" id="title" class="input-field" 
-                           value="{{ old('title') }}" required>
-                    <label for="title" class="input-label">Headline</label>
-                    @error('title') <span class="error-msg">{{ $message }}</span> @enderror
+            <div class="file-upload-wrapper" onclick="document.getElementById('image').click()">
+                <input type="file" name="image" id="image" class="file-input" accept="image/*" onchange="previewImage(event)">
+                <div class="upload-placeholder">
+                    <i class="far fa-image"></i>
+                    <span>Click to add a cover image (Optional)</span>
                 </div>
-
-                <div class="form-group">
-                    <textarea name="description" id="description" class="input-field" 
-                              style="min-height: 250px; resize: vertical; line-height: 1.6;" 
-                              required>{{ old('description') }}</textarea>
-                    <label for="description" class="input-label">Write your story here...</label>
-                    @error('description') <span class="error-msg">{{ $message }}</span> @enderror
+                <div id="preview-container">
+                    <img id="preview-image" src="#" alt="Preview">
                 </div>
+            </div>
+            @error('image') <span class="error-msg" style="text-align: center;">{{ $message }}</span> @enderror
 
-                <div class="file-upload-wrapper" onclick="document.getElementById('image').click()">
-                    <input type="file" name="image" id="image" class="file-input" accept="image/*" onchange="previewImage(event)">
-                    <div class="upload-placeholder">
-                        <i class="far fa-image"></i>
-                        <span>Click to add a cover image (Optional)</span>
-                    </div>
-                    <div id="preview-container">
-                        <img id="preview-image" src="#" alt="Preview">
-                    </div>
-                </div>
-                @error('image') <span class="error-msg" style="text-align: center;">{{ $message }}</span> @enderror
+            <div class="action-row">
+                <button type="reset" class="btn btn-cancel" onclick="clearPreview()">Reset</button>
+                <button type="submit" class="btn btn-submit">Publish Story</button>
+            </div>
 
-                <div class="action-row">
-                    <button type="reset" class="btn btn-cancel" onclick="clearPreview()">Reset</button>
-                    <button type="submit" class="btn btn-submit">Publish Story</button>
-                </div>
+        </form>
 
-            </form>
+    </div>
 
-        </div>
+</main>
+@endsection
 
-    </main>
+@push('scripts')
+<script>
+    // Image Preview Logic
+    function previewImage(event) {
+        const reader = new FileReader();
+        const preview = document.getElementById('preview-image');
+        const container = document.getElementById('preview-container');
+        const placeholder = document.querySelector('.upload-placeholder');
 
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none" style="display: none;">@csrf</form>
-
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('show');
+        reader.onload = function() {
+            preview.src = reader.result;
+            container.style.display = 'block';
+            placeholder.style.display = 'none';
         }
 
-        // Image Preview Logic
-        function previewImage(event) {
-            const reader = new FileReader();
-            const preview = document.getElementById('preview-image');
-            const container = document.getElementById('preview-container');
-            const placeholder = document.querySelector('.upload-placeholder');
-
-            reader.onload = function() {
-                preview.src = reader.result;
-                container.style.display = 'block';
-                placeholder.style.display = 'none';
-            }
-
-            if(event.target.files[0]) {
-                reader.readAsDataURL(event.target.files[0]);
-            }
+        if(event.target.files[0]) {
+            reader.readAsDataURL(event.target.files[0]);
         }
+    }
 
-        function clearPreview() {
-            document.getElementById('preview-container').style.display = 'none';
-            document.querySelector('.upload-placeholder').style.display = 'block';
-        }
-    </script>
-</body>
-</html>
+    function clearPreview() {
+        document.getElementById('preview-container').style.display = 'none';
+        document.querySelector('.upload-placeholder').style.display = 'block';
+    }
+</script>
+@endpush
