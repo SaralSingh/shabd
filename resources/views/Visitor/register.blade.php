@@ -147,8 +147,8 @@ body.guest-layout {
 
 /* NEW: Verify Mode Style (Triggers when button changes) */
 .btn-otp.verify-mode {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
+    background-color: #10b981; /* Default Emerald Green */
+    border-color: #10b981;
     color: white;
 }
 .btn-otp.verify-mode:hover {
