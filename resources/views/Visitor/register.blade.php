@@ -1,6 +1,7 @@
 @extends('layouts.guest')
 
 @section('title', 'Join Shabd - Share what you know')
+@section('title', 'Join Shabd - Share what you know')
 @section('meta_description', 'Join Shabd today and start sharing your wisdom. Create a free account and be part of a premium writing community, curated by Saral Singh.')
 @section('meta_keywords', 'register, sign up, join Shabd, blogger, writer platform, Saral Singh, community')
 
