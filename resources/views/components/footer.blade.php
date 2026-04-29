@@ -15,6 +15,6 @@
 </style>
 
 <footer class="footer">
-    <div>© {{ date('Y') }} Blogblitz Platform.</div>
+    <div>© {{ date('Y') }} Shabd. Platform.</div>
     <div>Designed for Writers.</div>
 </footer>

@@ -3,7 +3,7 @@
         @auth
             <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
         @endauth
-        <a href="{{ route('main.page') }}" class="logo">Blogblitz</a>
+        <a href="{{ route('main.page') }}" class="logo">Shabd.</a>
     </div>
 
     @yield('header_extra')
